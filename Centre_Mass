@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mass and Center of Mass Calculator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: linear-gradient(to bottom right, #8a2be2, #ff69b4); /* Purple to Pink gradient */
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            border-radius: 20px; 
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px); /* Blur effect for a modern look */
+        }
+        h1 { 
+            text-align: center; 
+            color: #D5006D; /* Darker pink color */
+            margin-bottom: 20px; 
+            font-size: 2.5em;
+        }
+        label { 
+            font-weight: bold; 
+            color: #7B1FA2; /* Dark purple */
+        }
+        input[type="number"] { 
+            width: calc(100% - 20px); 
+            padding: 10px; 
+            margin-top: 5px; 
+            border: 2px solid #D5006D; /* Border color */
+            border-radius: 4px; 
+            transition: border 0.3s ease; /* Smooth transition on focus */
+        }
+        input[type="number"]:focus {
+            border-color: #8A2BE2; /* Focus border color */
+            outline: none; 
+        }
+        button { 
+            background-color: #D5006D; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            padding: 10px 15px; 
+            cursor: pointer; 
+            margin-top: 10px; 
+            width: 48%; 
+            font-size: 16px; 
+            transition: background-color 0.3s ease; /* Transition for button hover effect */
+        }
+        button:hover { 
+            background-color: #C51162; /* Darker shade on hover */
+        }
+        .result { 
+            margin-top: 20px; 
+            padding: 10px; 
+            background: rgba(233, 233, 233, 0.8); /* Light grey background with transparency */
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+        }
+        h3 { 
+            margin-top: 20px; 
+            color: #555; 
+        }
+        @media (max-width: 600px) {
+            button { 
+                width: 100%; 
+            }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;"> <!-- Disable right-click -->
+    <div class="container">
+        <h1>Mass and Center of Mass Calculator</h1>
+        <form id="calculatorForm">
+            <label for="density">Density (mg/m³):</label>
+            <input type="number" id="density" step="any" min="0.000001" required><br><br>
+
+            <label for="volume">Volume (m³):</label>
+            <input type="number" id="volume" step="any" min="0.000001" required><br><br>
+
+            <label for="numDistances">Number of Distances:</label>
+            <input type="number" id="numDistances" min="1" required><br><br>
+
+            <div id="distances"></div>
+
+            <div style="display: flex; justify-content: space-between;">
+                <button type="button" onclick="calculate()">Calculate</button>
+                <button type="button" onclick="resetForm()">Reset</button>
+            </div>
+        </form>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Disable right-click context menu and keyboard shortcuts
+        document.addEventListener('keydown', function (event) {
+            // Disable Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, and F12
+            if ((event.ctrlKey && (event.key === 'u' || event.key === 'c' || event.key === 'v')) || 
+                (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) || 
+                event.key === 'F12') {
+                event.preventDefault();
+            }
+        });
+
+        function calculate() {
+            const density = parseFloat(document.getElementById('density').value);
+            const volume = parseFloat(document.getElementById('volume').value);
+            const numDistances = parseInt(document.getElementById('numDistances').value);
+
+            if (isNaN(density) || isNaN(volume) || isNaN(numDistances) || density <= 0 || volume <= 0 || numDistances <= 0) {
+                alert('Please enter valid positive numbers.');
+                return;
+            }
+
+            const mass = density * volume / 1e6;
+            let resultText = `The calculated mass is: ${mass < 1 ? mass.toFixed(6) : mass.toFixed(2)} kg<br>`;
+
+            let totalX = 0, totalY = 0, totalZ = 0;
+            for (let i = 0; i < numDistances; i++) {
+                const dx = parseFloat(document.getElementById(`distanceX${i}`).value);
+                const dy = parseFloat(document.getElementById(`distanceY${i}`).value);
+                const dz = parseFloat(document.getElementById(`distanceZ${i}`).value);
+
+                if (isNaN(dx) || isNaN(dy) || isNaN(dz)) {
+                    alert('Please enter valid distances.');
+                    return;
+                }
+
+                totalX += dx;
+                totalY += dy;
+                totalZ += dz;
+            }
+
+            const cMassX = totalX / numDistances;
+            const cMassY = totalY / numDistances;
+            const cMassZ = totalZ / numDistances;
+
+            resultText += `The Centre of Mass for:<br>
+                           x axis: ${cMassX.toFixed(2)} cm<br>
+                           y axis: ${cMassY.toFixed(2)} cm<br>
+                           z axis: ${cMassZ.toFixed(2)} cm<br>
+                           Coordinates: (${cMassX.toFixed(2)}, ${cMassY.toFixed(2)}, ${cMassZ.toFixed(2)})`;
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+
+        function resetForm() {
+            document.getElementById('calculatorForm').reset();
+            document.getElementById('distances').innerHTML = '';
+            document.getElementById('result').innerHTML = '';
+        }
+
+        document.getElementById('numDistances').addEventListener('change', function() {
+            const numDistances = parseInt(this.value);
+            const distancesDiv = document.getElementById('distances');
+            distancesDiv.innerHTML = '';
+
+            for (let i = 0; i < numDistances; i++) {
+                distancesDiv.innerHTML += `
+                    <h3>Distance Set ${i + 1}</h3>
+                    <label for="distanceX${i}">D_x${i + 1}:</label>
+                    <input type="number" id="distanceX${i}" step="any" required><br><br>
+                    <label for="distanceY${i}">D_y${i + 1}:</label>
+                    <input type="number" id="distanceY${i}" step="any" required><br><br>
+                    <label for="distanceZ${i}">D_z${i + 1}:</label>
+                    <input type="number" id="distanceZ${i}" step="any" required><br><br>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
